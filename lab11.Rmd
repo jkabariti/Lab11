@@ -1,0 +1,86 @@
+---
+title: "Lab11"
+author: "Joseph Kabariti"
+date: "November 21, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(microbenchmark)
+library(tidyverse)
+library(ggplot2)
+```
+
+
+
+```{r}
+binom = function(size, p){
+  arr_vals = (round(runif(size),1) %% p)
+  return(sum(ifelse(arr_vals == 0,1,0)))
+}
+
+rbinom_uniform = function(n,size,p){
+  replicate(n,binom(size,p))
+}
+
+
+
+rbinom_uniform(5,1,0.5)
+rbinom(5,1,0.5)
+
+rbinom_uniform(30,20,0.2)
+rbinom(30,20,0.2)
+```
+
+```{r}
+microbenchmark(rbinom_uniform(5,1,0.5),rbinom(5,1,0.5))
+```
+ 
+```{r}
+set.seed(987654321)
+
+N = 50
+nCont = 3
+mu = 0
+variance = 3
+sd = sqrt(variance)
+x_min = 20
+x_max = 40
+
+beta_zero = 15
+beta_one = 0.4
+epsilon_vals = rnorm(N,mu,sd)
+x_vals = sample(c(20:40),N,replace=TRUE) #runif(N,x_min,x_max)
+y_vals = beta_zero + beta_one * (x_vals) + epsilon_vals
+
+fit = lm(y_vals ~ x_vals)
+
+g = ggplot(data = data.frame(y_vals))
+g = g + geom_point(aes(x = fitted(fit),y = residuals(fit)))
+plot(g)
+```
+
+```{r}
+u_one = runif(50,0,1)
+u_two = runif(50,0,1)
+
+r = sqrt(-2* log10(u_one))
+theta = 2 * pi * u_two
+x = data.frame(r * cos(theta))
+y = data.frame(r * sin(theta))
+sim_data = data.frame(rnorm(50))
+
+colnames(x) = 'vals'
+colnames(y) = 'vals'
+colnames(sim_data) = 'vals'
+
+x$source = 'x'
+y$source = 'y'
+sim_data$source = 'rnorm'
+
+df = rbind(x,y,sim_data)
+
+ggplot(data=df,aes(x=vals,color=source,fill=source)) + geom_histogram(binwidth = 0.75)
+```
+
